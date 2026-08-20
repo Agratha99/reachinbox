@@ -184,9 +184,9 @@ export default function ComposeForm() {
             )}
 
             {/* Main Form Fields */}
-            <div className="p-7 space-y-5">
+            <div className="p-4 sm:p-7 space-y-4 sm:space-y-5">
                 {/* From Account Field */}
-                <div className="flex items-center space-x-3 text-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-1.5 sm:space-y-0 sm:space-x-3 text-xs">
                     <label className="w-16 font-bold text-gray-500">From:</label>
                     <div className="flex-1 bg-white/70 border border-white/80 rounded-2xl px-4 py-3 text-gray-900 font-semibold flex items-center justify-between shadow-2xs">
                         <div className="flex items-center space-x-2.5 truncate">
@@ -195,15 +195,15 @@ export default function ComposeForm() {
                                 {displayName} &lt;{displayEmail}&gt;
                             </span>
                         </div>
-                        <span className="text-[10px] bg-emerald-500/15 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                        <span className="text-[10px] bg-emerald-500/15 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex-shrink-0">
                             Verified Sender
                         </span>
                     </div>
                 </div>
 
                 {/* To Recipients Field */}
-                <div className="flex items-start space-x-3 text-xs">
-                    <label className="w-16 pt-3 font-bold text-gray-500">To:</label>
+                <div className="flex flex-col sm:flex-row sm:items-start space-y-1.5 sm:space-y-0 sm:space-x-3 text-xs">
+                    <label className="w-16 sm:pt-3 font-bold text-gray-500">To:</label>
                     <div className="flex-1">
                         <RecipientInput
                             recipients={recipients}
@@ -216,7 +216,7 @@ export default function ComposeForm() {
                 </div>
 
                 {/* Subject Line Field */}
-                <div className="flex items-center space-x-3 text-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-1.5 sm:space-y-0 sm:space-x-3 text-xs">
                     <label className="w-16 font-bold text-gray-500">Subject:</label>
                     <input
                         type="text"
@@ -240,10 +240,10 @@ export default function ComposeForm() {
                                 )}
                                 <span className="font-bold text-gray-700">Deliverability Spam Score:</span>
                                 <span className={`px-2.5 py-0.5 rounded-full font-extrabold text-[11px] ${spamResult.level === 'LOW'
-                                        ? 'bg-emerald-500/15 text-emerald-800 border border-emerald-500/30'
-                                        : spamResult.level === 'MEDIUM'
-                                            ? 'bg-amber-500/15 text-amber-800 border border-amber-500/30'
-                                            : 'bg-rose-500/15 text-rose-800 border border-rose-500/30'
+                                    ? 'bg-emerald-500/15 text-emerald-800 border border-emerald-500/30'
+                                    : spamResult.level === 'MEDIUM'
+                                        ? 'bg-amber-500/15 text-amber-800 border border-amber-500/30'
+                                        : 'bg-rose-500/15 text-rose-800 border border-rose-500/30'
                                     }`}>
                                     {spamResult.score}% ({spamResult.level} RISK)
                                 </span>
