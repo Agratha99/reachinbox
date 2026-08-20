@@ -15,14 +15,17 @@ export default function EmailRow({ email }: EmailRowProps) {
     const isSent = email.status === 'sent';
     const isFailed = email.status === 'failed';
 
-    const formattedTime = new Date(email.sentAt || email.scheduledAt).toLocaleTimeString([], {
+    const formattedTime = new Date(email.sentAt || email.scheduledAt).toLocaleTimeString('en-IN', {
         hour: '2-digit',
         minute: '2-digit',
+        timeZone: 'Asia/Kolkata',
+        hour12: true,
     });
 
-    const formattedDate = new Date(email.sentAt || email.scheduledAt).toLocaleDateString([], {
+    const formattedDate = new Date(email.sentAt || email.scheduledAt).toLocaleDateString('en-IN', {
         month: 'short',
         day: 'numeric',
+        timeZone: 'Asia/Kolkata',
     });
 
     return (

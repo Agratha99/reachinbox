@@ -248,7 +248,7 @@ export default function ComposeForm() {
 
                     {scheduledAt && (
                         <div className="text-xs text-emerald-800 font-bold bg-emerald-500/15 px-4 py-2.5 rounded-2xl border border-emerald-500/30 shadow-2xs">
-                            Scheduled for: {new Date(scheduledAt).toLocaleString()}
+                            Scheduled for: {new Date(scheduledAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true, day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} IST
                         </div>
                     )}
                 </div>

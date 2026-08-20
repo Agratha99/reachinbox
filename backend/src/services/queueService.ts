@@ -405,7 +405,7 @@ function startEmergencyFallbackLoop() {
                     status: 'SCHEDULED',
                     scheduledAt: { lte: now },
                 },
-                take: 10,
+                take: 25,
                 orderBy: { scheduledAt: 'asc' },
             });
 
@@ -415,7 +415,7 @@ function startEmergencyFallbackLoop() {
         } catch (err: any) {
             // Quiet fail
         }
-    }, 10000);
+    }, 5000);
 }
 
 function stopEmergencyFallbackLoop() {

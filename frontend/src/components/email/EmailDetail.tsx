@@ -38,12 +38,14 @@ export default function EmailDetail({ email }: EmailDetailProps) {
     const isSent = email.status === 'sent';
     const isFailed = email.status === 'failed';
 
-    const formattedDate = new Date(email.sentAt || email.scheduledAt).toLocaleDateString('en-US', {
+    const formattedDate = new Date(email.sentAt || email.scheduledAt).toLocaleDateString('en-IN', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
+        timeZone: 'Asia/Kolkata',
+        hour12: true,
     });
 
     const delaySeconds = email.delayMs
