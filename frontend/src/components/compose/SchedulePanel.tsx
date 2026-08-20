@@ -43,20 +43,20 @@ export default function SchedulePanel({
     };
 
     const [dateStr, setDateStr] = useState<string>(() => {
-        const d = scheduledAt ? new Date(scheduledAt) : new Date(Date.now() + 2 * 60 * 60 * 1000);
+        const d = scheduledAt ? new Date(scheduledAt) : new Date(Date.now() + 2 * 60 * 1000);
         return toLocalDateStr(d);
     });
 
     const [timeStr, setTimeStr] = useState<string>(() => {
-        const d = scheduledAt ? new Date(scheduledAt) : new Date(Date.now() + 2 * 60 * 60 * 1000);
+        const d = scheduledAt ? new Date(scheduledAt) : new Date(Date.now() + 2 * 60 * 1000);
         return toLocalTimeStr(d);
     });
 
     const [delay, setDelay] = useState<number>(delayBetweenSeconds || 2);
     const [limit, setLimit] = useState<number>(hourlyLimit || 200);
 
-    const applyPreset = (hoursFromNow: number) => {
-        const d = new Date(Date.now() + hoursFromNow * 60 * 60 * 1000);
+    const applyPreset = (minutesFromNow: number) => {
+        const d = new Date(Date.now() + minutesFromNow * 60 * 1000);
         const dateFormatted = toLocalDateStr(d);
         const timeFormatted = toLocalTimeStr(d);
         setDateStr(dateFormatted);
@@ -125,32 +125,32 @@ export default function SchedulePanel({
                         <div className="grid grid-cols-2 gap-2">
                             <button
                                 type="button"
-                                onClick={() => applyPreset(2)}
+                                onClick={() => applyPreset(5)}
                                 className="p-2 rounded-lg border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-left text-xs font-medium text-gray-700 transition-all flex items-center justify-between"
                             >
-                                <span>In 2 hours</span>
+                                <span>In 5 minutes</span>
                                 <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                             </button>
                             <button
                                 type="button"
-                                onClick={() => applyPreset(24)}
+                                onClick={() => applyPreset(60)}
                                 className="p-2 rounded-lg border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-left text-xs font-medium text-gray-700 transition-all"
                             >
-                                Tomorrow, 10:00 AM
+                                In 1 hour
                             </button>
                             <button
                                 type="button"
-                                onClick={() => applyPreset(48)}
+                                onClick={() => applyPreset(1440)}
+                                className="p-2 rounded-lg border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-left text-xs font-medium text-gray-700 transition-all"
+                            >
+                                Tomorrow, same time
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => applyPreset(2880)}
                                 className="p-2 rounded-lg border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-left text-xs font-medium text-gray-700 transition-all"
                             >
                                 In 2 Days
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => applyPreset(168)}
-                                className="p-2 rounded-lg border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-left text-xs font-medium text-gray-700 transition-all"
-                            >
-                                Next Week
                             </button>
                         </div>
                     </div>

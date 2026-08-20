@@ -117,7 +117,7 @@ export default function ComposeForm() {
         setErrorMsg(null);
 
         try {
-            const targetTime = scheduledAt || new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+            const targetTime = scheduledAt || new Date(Date.now() + 2 * 60 * 1000).toISOString();
             const res = await scheduleCampaignApi({
                 recipients,
                 subject,
