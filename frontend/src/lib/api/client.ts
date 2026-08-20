@@ -1,8 +1,13 @@
 import axios from 'axios';
 
+const normalizeApiBaseUrl = (baseUrl: string) => {
+    const trimmed = baseUrl.replace(/\/+$/, '');
+    return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+};
+
 const getApiBaseUrl = () => {
     if (process.env.NEXT_PUBLIC_API_URL) {
-        return process.env.NEXT_PUBLIC_API_URL;
+        return normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL);
     }
     if (typeof window !== 'undefined') {
         const { protocol, hostname } = window.location;

@@ -85,8 +85,8 @@ app.get('/api/track/open/:id', trackEmailOpen);
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/emails', emailRoutes);
 app.get('/api/emails/calendar', requireAuth, getCalendarEvents);
+app.use('/api/emails', emailRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/leads', leadsRoutes);

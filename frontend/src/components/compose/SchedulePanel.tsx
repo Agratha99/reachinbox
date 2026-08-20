@@ -9,7 +9,7 @@ interface SchedulePanelProps {
     hourlyLimit: number;
     onScheduleChange: (scheduledAt: string, delay: number, limit: number) => void;
     onClose: () => void;
-    onConfirmSchedule: () => void;
+    onConfirmSchedule: (scheduledAt: string, delay: number, limit: number) => void;
 }
 
 export default function SchedulePanel({
@@ -74,8 +74,9 @@ export default function SchedulePanel({
 
     const handleSave = () => {
         const localDate = buildLocalDate(dateStr, timeStr);
-        onScheduleChange(localDate.toISOString(), delay, limit);
-        onConfirmSchedule();
+        const scheduledAtIso = localDate.toISOString();
+        onScheduleChange(scheduledAtIso, delay, limit);
+        onConfirmSchedule(scheduledAtIso, delay, limit);
     };
 
     return (

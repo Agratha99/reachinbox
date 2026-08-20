@@ -12,6 +12,15 @@ import { getCurrentUser } from '@/lib/api/auth';
 import { User } from '@/types';
 import { Send, Clock, AlertCircle, CheckCircle2, UserCheck } from 'lucide-react';
 
+interface ScheduleOptions {
+    scheduledAt: string;
+    delayBetweenSeconds: number;
+    hourlyLimit: number;
+}
+
+const getRequestErrorMessage = (err: any, fallback: string) =>
+    err.response?.data?.error || err.response?.data?.message || err.message || fallback;
+
 export default function ComposeForm() {
     const router = useRouter();
 
@@ -25,6 +34,7 @@ export default function ComposeForm() {
 
     const [showSchedulePanel, setShowSchedulePanel] = useState<boolean>(false);
     const [showSummaryModal, setShowSummaryModal] = useState<boolean>(false);
+    const [pendingSchedule, setPendingSchedule] = useState<ScheduleOptions | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -47,6 +57,8 @@ export default function ComposeForm() {
     const displayEmail = user?.senders?.[0]?.email || user?.email || 'kataru.rahul@gmail.com';
 
     const handleSendImmediate = async () => {
+        setPendingSchedule(null);
+
         if (recipients.length === 0) {
             setErrorMsg('Please specify at least one recipient.');
             return;
@@ -88,14 +100,15 @@ export default function ComposeForm() {
             }
             setTimeout(() => router.push('/dashboard/sent'), 1200);
         } catch (err: any) {
-            setErrorMsg(err.response?.data?.error || 'Failed to dispatch email.');
+            setErrorMsg(getRequestErrorMessage(err, 'Failed to dispatch email.'));
         } finally {
             setIsSubmitting(false);
             setShowSummaryModal(false);
+            setPendingSchedule(null);
         }
     };
 
-    const handleConfirmSchedule = async () => {
+    const handleConfirmSchedule = async (scheduleOptions?: ScheduleOptions) => {
         if (recipients.length === 0) {
             setErrorMsg('Please specify at least one recipient.');
             return;
@@ -109,32 +122,37 @@ export default function ComposeForm() {
             return;
         }
 
-        executeSchedule();
+        executeSchedule(scheduleOptions);
     };
 
-    const executeSchedule = async () => {
+    const executeSchedule = async (scheduleOptions?: ScheduleOptions | null) => {
         setIsSubmitting(true);
         setErrorMsg(null);
 
         try {
-            const targetTime = scheduledAt || new Date(Date.now() + 2 * 60 * 1000).toISOString();
+            const selectedSchedule = scheduleOptions || pendingSchedule;
+            const selectedTime = selectedSchedule?.scheduledAt || scheduledAt;
+            const selectedDelay = selectedSchedule?.delayBetweenSeconds || delayBetweenSeconds;
+            const selectedHourlyLimit = selectedSchedule?.hourlyLimit || hourlyLimit;
+            const targetTime = selectedTime || new Date(Date.now() + 2 * 60 * 1000).toISOString();
             const res = await scheduleCampaignApi({
                 recipients,
                 subject,
                 body: bodyHtml,
                 scheduledAt: targetTime,
-                delayMs: delayBetweenSeconds * 1000,
-                delayBetweenSeconds,
-                hourlyLimit,
+                delayMs: selectedDelay * 1000,
+                delayBetweenSeconds: selectedDelay,
+                hourlyLimit: selectedHourlyLimit,
             });
 
             setSuccessMsg(`Campaign scheduled for ${res.totalRecipients} recipients! Redirecting...`);
             setTimeout(() => router.push('/dashboard/scheduled'), 1200);
         } catch (err: any) {
-            setErrorMsg(err.response?.data?.error || 'Failed to schedule campaign.');
+            setErrorMsg(getRequestErrorMessage(err, 'Failed to schedule campaign.'));
         } finally {
             setIsSubmitting(false);
             setShowSummaryModal(false);
+            setPendingSchedule(null);
         }
     };
 
@@ -266,12 +284,18 @@ export default function ComposeForm() {
                         setHourlyLimit(newLimit);
                     }}
                     onClose={() => setShowSchedulePanel(false)}
-                    onConfirmSchedule={() => {
+                    onConfirmSchedule={(newTime, newDelay, newLimit) => {
+                        const scheduleOptions = {
+                            scheduledAt: newTime,
+                            delayBetweenSeconds: newDelay,
+                            hourlyLimit: newLimit,
+                        };
+                        setPendingSchedule(scheduleOptions);
                         setShowSchedulePanel(false);
                         if (recipients.length > 50) {
                             setShowSummaryModal(true);
                         } else {
-                            handleConfirmSchedule();
+                            handleConfirmSchedule(scheduleOptions);
                         }
                     }}
                 />
@@ -282,11 +306,14 @@ export default function ComposeForm() {
                 <CampaignSummaryModal
                     totalRecipients={recipients.length}
                     subject={subject}
-                    scheduledAt={scheduledAt}
-                    delayBetweenSeconds={delayBetweenSeconds}
-                    hourlyLimit={hourlyLimit}
-                    onConfirm={scheduledAt ? executeSchedule : executeImmediateSend}
-                    onCancel={() => setShowSummaryModal(false)}
+                    scheduledAt={pendingSchedule?.scheduledAt || scheduledAt}
+                    delayBetweenSeconds={pendingSchedule?.delayBetweenSeconds || delayBetweenSeconds}
+                    hourlyLimit={pendingSchedule?.hourlyLimit || hourlyLimit}
+                    onConfirm={pendingSchedule || scheduledAt ? () => executeSchedule(pendingSchedule) : executeImmediateSend}
+                    onCancel={() => {
+                        setShowSummaryModal(false);
+                        setPendingSchedule(null);
+                    }}
                     isSubmitting={isSubmitting}
                 />
             )}
