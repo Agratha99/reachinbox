@@ -8,3 +8,10 @@
 
 [build.environment]
   NODE_VERSION = "18.17.0"
+
+# Netlify Edge Proxy Rewrite to prevent 404 and HTTPS Mixed Content errors
+[[redirects]]
+  from = "/api/*"
+  to = "https://reachinbox-backend.onrender.com/api/:splat"
+  status = 200
+  force = true
