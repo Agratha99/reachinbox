@@ -1,0 +1,23 @@
+{
+    "name": "reachinbox-enterprise",
+    "version": "1.0.0",
+    "description": "ReachInbox Enterprise Email Scheduler & Campaign Platform",
+    "scripts": {
+        "setup": "cd backend && npm install && npx prisma generate && cd ../frontend && npm install",
+        "dev:backend": "cd backend && npm run dev",
+        "dev:frontend": "cd frontend && npm run dev",
+        "build:backend": "cd backend && npm run build",
+        "build:frontend": "cd frontend && npm run build",
+        "build": "npm run build:backend && npm run build:frontend"
+    },
+    "keywords": [
+        "reachinbox",
+        "email-scheduler",
+        "outreach",
+        "nextjs",
+        "express",
+        "prisma"
+    ],
+    "author": "Kataru Rahul Reddy",
+    "license": "ISC"
+}
