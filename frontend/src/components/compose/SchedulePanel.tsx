@@ -20,14 +20,36 @@ export default function SchedulePanel({
     onClose,
     onConfirmSchedule,
 }: SchedulePanelProps) {
+    // Helper: build a local Date from date + time strings
+    const buildLocalDate = (date: string, time: string): Date => {
+        const [year, month, day] = date.split('-').map(Number);
+        const [hours, minutes] = time.split(':').map(Number);
+        return new Date(year, month - 1, day, hours, minutes);
+    };
+
+    // Helper: format a Date to YYYY-MM-DD in local timezone
+    const toLocalDateStr = (d: Date): string => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dd}`;
+    };
+
+    // Helper: format a Date to HH:MM in local timezone
+    const toLocalTimeStr = (d: Date): string => {
+        const h = String(d.getHours()).padStart(2, '0');
+        const m = String(d.getMinutes()).padStart(2, '0');
+        return `${h}:${m}`;
+    };
+
     const [dateStr, setDateStr] = useState<string>(() => {
         const d = scheduledAt ? new Date(scheduledAt) : new Date(Date.now() + 2 * 60 * 60 * 1000);
-        return d.toISOString().split('T')[0];
+        return toLocalDateStr(d);
     });
 
     const [timeStr, setTimeStr] = useState<string>(() => {
         const d = scheduledAt ? new Date(scheduledAt) : new Date(Date.now() + 2 * 60 * 60 * 1000);
-        return d.toTimeString().substring(0, 5);
+        return toLocalTimeStr(d);
     });
 
     const [delay, setDelay] = useState<number>(delayBetweenSeconds || 2);
@@ -35,17 +57,17 @@ export default function SchedulePanel({
 
     const applyPreset = (hoursFromNow: number) => {
         const d = new Date(Date.now() + hoursFromNow * 60 * 60 * 1000);
-        const dateFormatted = d.toISOString().split('T')[0];
-        const timeFormatted = d.toTimeString().substring(0, 5);
+        const dateFormatted = toLocalDateStr(d);
+        const timeFormatted = toLocalTimeStr(d);
         setDateStr(dateFormatted);
         setTimeStr(timeFormatted);
-        const fullIso = new Date(`${dateFormatted}T${timeFormatted}`).toISOString();
-        onScheduleChange(fullIso, delay, limit);
+        const localDate = buildLocalDate(dateFormatted, timeFormatted);
+        onScheduleChange(localDate.toISOString(), delay, limit);
     };
 
     const handleSave = () => {
-        const fullIso = new Date(`${dateStr}T${timeStr}`).toISOString();
-        onScheduleChange(fullIso, delay, limit);
+        const localDate = buildLocalDate(dateStr, timeStr);
+        onScheduleChange(localDate.toISOString(), delay, limit);
         onConfirmSchedule();
     };
 
@@ -76,7 +98,7 @@ export default function SchedulePanel({
                                 <input
                                     type="date"
                                     value={dateStr}
-                                    min={new Date().toISOString().split('T')[0]}
+                                    min={toLocalDateStr(new Date())}
                                     onChange={(e) => setDateStr(e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-800 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
                                 />
