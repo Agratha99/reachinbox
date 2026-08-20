@@ -54,12 +54,21 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
     };
 
     return (
-        <div className="border border-gray-200/90 rounded-2xl overflow-hidden bg-white/90 flex flex-col min-h-[380px] focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all shadow-2xs">
+        <div
+            onClick={() => editor.chain().focus().run()}
+            className="border border-gray-200/90 rounded-2xl overflow-hidden bg-white/90 flex flex-col min-h-[380px] focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all shadow-2xs cursor-text"
+        >
             {/* Editor Main Content Area */}
-            <div className="p-5 sm:p-6 flex-1 overflow-y-auto cursor-text">
+            <div
+                className="p-5 sm:p-6 flex-1 flex flex-col cursor-text min-h-[300px]"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    editor.chain().focus().run();
+                }}
+            >
                 <EditorContent
                     editor={editor}
-                    className="prose max-w-none text-sm sm:text-base text-gray-800 focus:outline-none min-h-[300px] leading-relaxed"
+                    className="prose max-w-none text-sm sm:text-base text-gray-800 focus:outline-none flex-1 min-h-[300px] leading-relaxed [&_*]:outline-none [&_*]:shadow-none"
                 />
             </div>
 
