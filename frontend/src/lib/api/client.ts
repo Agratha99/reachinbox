@@ -1,10 +1,19 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const getApiBaseUrl = () => {
+    if (process.env.NEXT_PUBLIC_API_URL) {
+        return process.env.NEXT_PUBLIC_API_URL;
+    }
+    if (typeof window !== 'undefined') {
+        const { protocol, hostname } = window.location;
+        return `${protocol}//${hostname}:5000/api`;
+    }
+    return 'http://localhost:5000/api';
+};
 
 export const apiClient = axios.create({
-    baseURL: API_BASE_URL,
-    timeout: 4000, // 4-second strict timeout for ultra-fast response & zero hanging
+    baseURL: getApiBaseUrl(),
+    timeout: 15000,
     headers: {
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
@@ -12,6 +21,10 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
+    if (!process.env.NEXT_PUBLIC_API_URL && typeof window !== 'undefined') {
+        const { protocol, hostname } = window.location;
+        config.baseURL = `${protocol}//${hostname}:5000/api`;
+    }
     if (typeof window !== 'undefined') {
         const token = localStorage.getItem('reachinbox_auth_token');
         if (token) {

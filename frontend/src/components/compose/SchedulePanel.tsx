@@ -22,9 +22,16 @@ export default function SchedulePanel({
 }: SchedulePanelProps) {
     // Helper: build a local Date from date + time strings
     const buildLocalDate = (date: string, time: string): Date => {
-        const [year, month, day] = date.split('-').map(Number);
-        const [hours, minutes] = time.split(':').map(Number);
-        return new Date(year, month - 1, day, hours, minutes);
+        try {
+            if (!date || !time) return new Date(Date.now() + 2 * 60 * 1000);
+            const [year, month, day] = date.split('-').map(Number);
+            const [hours, minutes] = time.split(':').map(Number);
+            const d = new Date(year, month - 1, day, hours, minutes);
+            if (isNaN(d.getTime())) return new Date(Date.now() + 2 * 60 * 1000);
+            return d;
+        } catch (e) {
+            return new Date(Date.now() + 2 * 60 * 1000);
+        }
     };
 
     // Helper: format a Date to YYYY-MM-DD in local timezone
