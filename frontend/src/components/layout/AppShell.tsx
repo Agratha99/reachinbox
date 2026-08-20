@@ -59,6 +59,7 @@ export default function AppShell({ children, searchQuery, onSearchChange }: AppS
             {/* Animated iOS Background Light Spheres */}
             <div className="ios-light-orb-1" />
             <div className="ios-light-orb-2" />
+            <div className="ios-light-orb-3" />
 
             <Header user={user} searchQuery={searchQuery} onSearchChange={onSearchChange} />
             <div className="flex flex-1 overflow-hidden z-10">

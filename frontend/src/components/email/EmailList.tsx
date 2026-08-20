@@ -45,18 +45,18 @@ export default function EmailList({
 
     if (!emails || emails.length === 0) {
         return (
-            <div className="py-16 px-4 text-center border border-dashed border-gray-200 rounded-xl my-4 bg-gray-50/50 max-w-lg mx-auto">
-                <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-3">
-                    <Mail className="w-6 h-6" />
+            <div className="py-20 px-6 text-center ios-glass-card border border-white/80 rounded-[28px] my-6 max-w-lg mx-auto shadow-xl">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <Mail className="w-7 h-7 text-emerald-600" />
                 </div>
-                <h3 className="text-base font-semibold text-gray-900 mb-1">{emptyTitle}</h3>
-                <p className="text-xs text-gray-500 mb-4 max-w-xs mx-auto">{emptyDescription}</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">{emptyTitle}</h3>
+                <p className="text-xs text-gray-500 mb-5 max-w-xs mx-auto leading-relaxed">{emptyDescription}</p>
                 {showComposeButton && (
                     <Link
                         href="/dashboard/compose"
-                        className="inline-flex items-center space-x-1.5 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors shadow-sm"
+                        className="inline-flex items-center space-x-2 px-5 py-2.5 ios-btn-primary text-white rounded-xl text-xs font-bold transition-all"
                     >
-                        <span>+ Compose Email</span>
+                        <span>+ Compose Campaign</span>
                     </Link>
                 )}
             </div>
@@ -64,8 +64,8 @@ export default function EmailList({
     }
 
     return (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-            <div className="divide-y divide-gray-100">
+        <div className="ios-glass-card border border-white/90 rounded-[28px] overflow-hidden shadow-xl">
+            <div className="divide-y divide-gray-100/80">
                 {emails.map((email) => (
                     <EmailRow key={email.id} email={email} />
                 ))}
@@ -73,29 +73,29 @@ export default function EmailList({
 
             {/* Pagination Footer */}
             {pagination && pagination.totalPages > 1 && (
-                <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between text-xs text-gray-500">
+                <div className="px-5 py-3.5 border-t border-gray-100/80 bg-white/40 backdrop-blur-md flex items-center justify-between text-xs text-gray-500">
                     <div>
-                        Showing <span className="font-semibold text-gray-700">{(pagination.page - 1) * pagination.limit + 1}</span>–
-                        <span className="font-semibold text-gray-700">
+                        Showing <span className="font-bold text-gray-800">{(pagination.page - 1) * pagination.limit + 1}</span>–
+                        <span className="font-bold text-gray-800">
                             {Math.min(pagination.page * pagination.limit, pagination.total)}
                         </span>{' '}
-                        of <span className="font-semibold text-gray-700">{pagination.total}</span> emails
+                        of <span className="font-bold text-gray-800">{pagination.total}</span> emails
                     </div>
                     <div className="flex items-center space-x-2">
                         <button
                             onClick={() => onPageChange?.(pagination.page - 1)}
                             disabled={pagination.page <= 1}
-                            className="p-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="p-1.5 rounded-xl border border-gray-200/80 bg-white/80 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-2xs active:scale-95"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
-                        <span className="font-medium text-gray-700">
+                        <span className="font-semibold text-gray-800 px-2">
                             {pagination.page} / {pagination.totalPages}
                         </span>
                         <button
                             onClick={() => onPageChange?.(pagination.page + 1)}
                             disabled={pagination.page >= pagination.totalPages}
-                            className="p-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="p-1.5 rounded-xl border border-gray-200/80 bg-white/80 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-2xs active:scale-95"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>

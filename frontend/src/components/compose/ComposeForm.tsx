@@ -137,11 +137,11 @@ export default function ComposeForm() {
     };
 
     return (
-        <div className="ios-glass rounded-[32px] border border-white/80 shadow-[0_25px_60px_rgba(0,0,0,0.06)] max-w-4xl mx-auto overflow-hidden font-sans backdrop-blur-3xl">
+        <div className="ios-glass-card rounded-[32px] border border-white/90 shadow-2xl max-w-4xl mx-auto overflow-hidden font-sans backdrop-blur-3xl">
             {/* Top Glass Header */}
-            <div className="px-7 py-4 border-b border-white/60 bg-gradient-to-r from-white/90 via-emerald-50/50 to-white/90 flex items-center justify-between">
+            <div className="px-7 py-4 border-b border-white/60 bg-white/50 backdrop-blur-md flex items-center justify-between">
                 <div>
-                    <h1 className="text-base font-bold text-gray-900">Compose Email</h1>
+                    <h1 className="text-base font-bold text-gray-900">Compose Campaign</h1>
                 </div>
 
                 <div className="flex items-center space-x-2.5">

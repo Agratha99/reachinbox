@@ -28,20 +28,20 @@ export default function EmailRow({ email }: EmailRowProps) {
     return (
         <Link
             href={`/dashboard/email/${email.id}`}
-            className="group flex items-center justify-between px-4 py-3 border-b border-gray-100 hover:bg-gray-50/80 transition-colors cursor-pointer text-sm"
+            className="group flex items-center justify-between px-5 py-3.5 border-b border-gray-100/60 hover:bg-white/80 hover:scale-[1.003] transition-all duration-200 cursor-pointer text-sm"
         >
             <div className="flex items-center space-x-4 min-w-0 flex-1 pr-4">
                 {/* Status Indicator Dot */}
                 <div className="flex-shrink-0">
-                    {isScheduled && <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm" />}
+                    {isScheduled && <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-[0_0_8px_rgba(16,185,129,0.5)]" />}
                     {isProcessing && <RefreshCw className="w-3.5 h-3.5 text-blue-500 animate-spin" />}
-                    {isSent && <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block" />}
+                    {isSent && <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block shadow-[0_0_8px_rgba(5,150,105,0.4)]" />}
                     {isFailed && <AlertCircle className="w-4 h-4 text-red-500" />}
                 </div>
 
                 {/* Recipient Info matching reference */}
                 <div className="w-44 flex-shrink-0">
-                    <p className="font-semibold text-gray-900 truncate">
+                    <p className="font-bold text-gray-900 truncate group-hover:text-emerald-800 transition-colors">
                         To: {email.recipientName || email.recipient}
                     </p>
                     <p className="text-xs text-gray-400 truncate">{email.recipient}</p>
@@ -50,7 +50,7 @@ export default function EmailRow({ email }: EmailRowProps) {
                 {/* Status Badge Tag matching reference UI badges */}
                 <div className="flex-shrink-0 mr-2">
                     {isScheduled && (
-                        <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-800 border border-amber-500/20 shadow-2xs">
+                        <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-800 border border-amber-500/25 shadow-2xs backdrop-blur-md">
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
@@ -59,13 +59,13 @@ export default function EmailRow({ email }: EmailRowProps) {
                         </span>
                     )}
                     {isProcessing && (
-                        <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-800 border border-blue-500/20 shadow-2xs">
+                        <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-800 border border-blue-500/25 shadow-2xs backdrop-blur-md">
                             <RefreshCw className="w-3 h-3 text-blue-600 animate-spin" />
                             <span>Sending...</span>
                         </span>
                     )}
                     {isSent && (
-                        <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-800 border border-emerald-500/20 shadow-2xs">
+                        <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-800 border border-emerald-500/25 shadow-2xs backdrop-blur-md">
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -74,7 +74,7 @@ export default function EmailRow({ email }: EmailRowProps) {
                         </span>
                     )}
                     {isFailed && (
-                        <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/10 text-rose-800 border border-rose-500/20 shadow-2xs">
+                        <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-rose-500/10 text-rose-800 border border-rose-500/25 shadow-2xs backdrop-blur-md">
                             <span className="h-2 w-2 rounded-full bg-rose-500 inline-block"></span>
                             <span>Failed</span>
                         </span>
@@ -83,10 +83,10 @@ export default function EmailRow({ email }: EmailRowProps) {
 
                 {/* Subject & Preview */}
                 <div className="min-w-0 flex-1">
-                    <span className="font-medium text-gray-900 mr-2 group-hover:text-emerald-700 transition-colors">
+                    <span className="font-semibold text-gray-900 mr-2 group-hover:text-emerald-700 transition-colors">
                         {email.subject}
                     </span>
-                    <span className="text-gray-400 truncate hidden md:inline">
+                    <span className="text-gray-400 truncate hidden md:inline text-xs">
                         — {email.bodyPreview}
                     </span>
                 </div>
@@ -100,7 +100,7 @@ export default function EmailRow({ email }: EmailRowProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center space-x-1 px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 border border-emerald-500/30 rounded-lg text-[11px] font-bold transition-all shadow-2xs hover:scale-105"
+                        className="inline-flex items-center space-x-1.5 px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 border border-emerald-500/30 rounded-xl text-[11px] font-bold transition-all shadow-2xs hover:scale-105 active:scale-95 backdrop-blur-md"
                         title="View rendered email preview on Ethereal Email SMTP"
                     >
                         <span>Preview Email</span>
