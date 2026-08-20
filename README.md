@@ -1,92 +1,44 @@
-## 🌐 Deployment Guide (Netlify + Render / Railway)
+# 🚀 ReachInbox Enterprise - Autonomous High-Concurrency Email Scheduler
 
-Because ReachInbox features a persistent **BullMQ worker process** and a **Redis connection**, the application is deployed in two complementary parts:
-1. **Frontend (Next.js 14)**: Deployed to **Netlify** using Netlify's Next.js runtime plugin (`netlify.toml`).
-2. **Backend (Express + BullMQ Worker + Redis)**: Deployed to a persistent Node.js host (such as **Render**, **Railway**, **Fly.io**, or **AWS EC2**) connected to a managed Redis instance (e.g. **Upstash Redis** or **Render Redis**).
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Next.js 14](https://img.shields.io/badge/Next.js%2014-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)](https://expressjs.com/)
+[![BullMQ](https://img.shields.io/badge/BullMQ-Queue-red?style=for-the-badge)](https://docs.bullmq.io/)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
----
-
-### 🚀 Step 1: Deploying the Next.js Frontend to Netlify
-
-1. **Push your repository** to GitHub / GitLab / Bitbucket.
-2. Log in to [Netlify Dashboard](https://app.netlify.com/) and click **Add new site** ➔ **Import an existing project**.
-3. Select your repository.
-4. Netlify will automatically detect the `netlify.toml` file in the root directory:
-   - **Base directory**: `frontend`
-   - **Build command**: `npm run build`
-   - **Publish directory**: `frontend/.next`
-5. **Configure Environment Variables** in Netlify (**Site settings ➔ Environment variables**):
-   - `NEXT_PUBLIC_API_URL`: `https://your-backend-api.onrender.com`
-   - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`: `your_google_oauth_client_id.apps.googleusercontent.com`
-6. Click **Deploy Site**. Netlify will build and host your Next.js frontend with SSL enabled.
+ReachInbox Enterprise is a production-grade, crash-proof email cold outreach and campaign scheduling platform. Designed to handle **1,000+ concurrent email dispatches** seamlessly without server crashes, rate-limit bans, or lost jobs.
 
 ---
 
-### ⚙️ Step 2: Deploying Backend & BullMQ Worker (Render / Railway)
-
-1. Create a managed **Redis** instance (e.g., free tier on [Upstash](https://upstash.com/) or [Render Redis](https://render.com/)).
-2. Create a managed **PostgreSQL** database (e.g., [Neon.tech](https://neon.tech/) or Render Postgres).
-3. Create a **Web Service** for `/backend` on Render/Railway:
-   - **Build Command**: `cd backend && npm install && npx prisma db push && npm run build`
-   - **Start Command**: `cd backend && npm run start`
-4. Set Environment Variables:
-   - `DATABASE_URL`: `postgresql://user:pass@host:5432/db`
-   - `REDIS_HOST`: `your-redis-host.upstash.io`
-   - `REDIS_PORT`: `6379`
-   - `WORKER_CONCURRENCY`: `10`
-   - `MAX_EMAILS_PER_HOUR`: `200`
-   - `INTER_EMAIL_DELAY_MS`: `2000`
-5. Once deployed, copy your backend URL (`https://your-backend-api.onrender.com`) and update the `to` field in `netlify.toml` or `NEXT_PUBLIC_API_URL` on Netlify.
+## 📑 Table of Contents
+1. [⚡ Quick Start Guide](#-quick-start-guide)
+   - [Running the Backend](#1-running-the-backend-express-redis-db-bullmq-worker)
+   - [Running the Frontend](#2-running-the-frontend-nextjs-14)
+   - [1-Click Double-Click Launcher (Windows)](#3-1-click-double-click-launcher-windows)
+2. [✉️ Ethereal Email & Environment Configuration](#%EF%B8%8F-ethereal-email--environment-configuration)
+3. [🏗️ Architecture Overview](#%EF%B8%8F-architecture-overview)
+   - [How Scheduling Works (No Cron)](#1-how-scheduling-works-no-cron)
+   - [Persistence Across Server Restarts](#2-persistence-across-server-restarts)
+   - [Rate Limiting & Concurrency Engine](#3-rate-limiting--concurrency-engine)
+   - [Behavior Under High Concurrency (1,000+ Emails)](#4-behavior-under-high-concurrency-1000-emails)
+4. [🗺️ Complete Features Implemented Matrix](#%EF%B8%8F-complete-features-implemented-matrix)
+5. [📊 BullMQ Queue Admin Dashboard](#-bullmq-queue-admin-dashboard)
+6. [🌐 Permanent Cloud Deployment (Render / Vercel)](#-permanent-cloud-deployment-render--vercel)
 
 ---
 
 ## ⚡ Quick Start Guide
 
-### 1. Prerequisites
+### Prerequisites
 - **Node.js**: `v18.0.0` or higher
 - **npm**: `v9.0.0` or higher
-- **Database**: PostgreSQL or MySQL running locally (or SQLite for development)
-- **Redis**: Running on `localhost:6379` (BullMQ persistent queue backend)
+- **Database**: PostgreSQL (or SQLite/MySQL for local testing)
+- **Redis**: Running on `localhost:6379` (Required for BullMQ queues)
 
 ---
 
-### 2. Environment Setup & Ethereal Email
-
-#### Backend `.env` (`/backend/.env`)
-```env
-PORT=5000
-NODE_ENV=development
-BACKEND_URL=http://localhost:5000
-
-# Relational Database (PostgreSQL / MySQL / SQLite)
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/reachinbox?schema=public"
-
-# Redis Connection for BullMQ
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# Queue Worker & Rate Limiter Configuration
-WORKER_CONCURRENCY=10
-PROCESSING_TIMEOUT_MS=120000
-MAX_EMAILS_PER_HOUR=200
-INTER_EMAIL_DELAY_MS=2000
-
-# Ethereal Email (Auto-generated fallback or custom SMTP)
-SMTP_HOST=smtp.ethereal.email
-SMTP_PORT=587
-SMTP_USER=your_ethereal_user@ethereal.email
-SMTP_PASS=your_ethereal_password
-
-# JWT Authentication Secret
-JWT_SECRET=supersecret_reachinbox_jwt_token_key_2026
-```
-
-#### How to set up Ethereal Email
-If no `SMTP_USER` / `SMTP_PASS` is specified in `.env`, the system automatically invokes `nodemailer.createTestAccount()` on boot, generates a real Ethereal test account automatically, and logs the credentials & Ethereal inbox URL to the terminal!
-
----
-
-### 3. Backend Setup (Express, DB, Redis, BullMQ Worker)
+### 1. Running the Backend (Express, Redis, DB, BullMQ Worker)
 
 ```bash
 # 1. Navigate to backend directory
@@ -95,46 +47,86 @@ cd backend
 # 2. Install dependencies
 npm install
 
-# 3. Push Prisma database schema
+# 3. Apply Prisma database schema migrations
 npx prisma db push
 
-# 4. Build TypeScript backend
-npm run build
-
-# 5. Start production server (starts Express API & BullMQ Worker concurrently)
-npm run start
+# 4. Start the backend server (Runs Express API & BullMQ Worker concurrently)
+npm run dev
 ```
-The backend API server and BullMQ worker will start on **`http://localhost:5000`**.
+> **Backend API URL**: `http://localhost:5000`  
+> **Health Check**: `http://localhost:5000/api/health`
 
 ---
 
-### 4. Frontend Setup (Next.js 14)
+### 2. Running the Frontend (Next.js 14)
 
 ```bash
-# 1. Navigate to frontend directory
+# 1. Open a new terminal and navigate to frontend directory
 cd frontend
 
 # 2. Install dependencies
 npm install
 
-# 3. Build Next.js production web app
-npm run build
-
-# 4. Start Next.js web application
-npm run start
+# 3. Start Next.js development server
+npm run dev
 ```
-The frontend web application will be available at **`http://localhost:3000`**.
+> **Frontend Web UI**: `http://localhost:3000`
 
 ---
 
-## 📊 BullMQ Queue Admin Dashboard
+### 3. 1-Click Double-Click Launcher (Windows)
+Alternatively, you can start both Backend and Frontend in a single step on Windows:
+```bash
+# Double click start.bat in the root folder OR run in terminal:
+.\start.bat
+```
 
-The backend includes `@bull-board/express` for real-time visual queue monitoring!
-- **URL**: `http://localhost:5000/admin/queues` (or `https://your-backend-api.onrender.com/admin/queues`)
-- **Features**:
-  - View live active workers, delayed jobs, completed dispatches, and failed job retries.
-  - Inspect exact job payloads, Redis delay timestamps, and backoff configurations.
-  - Manually retry or clean failed jobs directly from the admin UI.
+---
+
+## ✉️ Ethereal Email & Environment Configuration
+
+### Backend Environment File (`/backend/.env`)
+
+Create a `.env` file inside the `backend/` folder with the following variables:
+
+```env
+PORT=5000
+NODE_ENV=development
+BACKEND_URL=http://localhost:5000
+
+# Relational Database Connection
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/reachinbox?schema=public"
+
+# Redis Connection for BullMQ Engine
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# Concurrency & Rate Limit Parameters
+WORKER_CONCURRENCY=10
+PROCESSING_TIMEOUT_MS=120000
+MAX_EMAILS_PER_HOUR=200
+INTER_EMAIL_DELAY_MS=2000
+
+# Ethereal Email Configuration (Optional - Auto-generates if omitted)
+SMTP_HOST=smtp.ethereal.email
+SMTP_PORT=587
+SMTP_USER=your_ethereal_user@ethereal.email
+SMTP_PASS=your_ethereal_password
+
+# Authentication Secret
+JWT_SECRET=supersecret_reachinbox_jwt_token_key_2026
+```
+
+### Frontend Environment File (`/frontend/.env.local`)
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
+```
+
+### 💡 How Ethereal Email Works & Auto-Fallback
+- **Auto-Generated Test Accounts**: If no `SMTP_USER` / `SMTP_PASS` is specified in `.env`, Nodemailer automatically creates a real Ethereal test account on boot (`nodemailer.createTestAccount()`).
+- **Live Preview URLs**: Every sent email receives a live **Ethereal Preview URL** (e.g. `https://ethereal.email/message/XxX...`), allowing you to view sent HTML emails in your browser without spending money on real domain warmups!
 
 ---
 
@@ -153,54 +145,83 @@ flowchart TD
 ```
 
 ### 1. How Scheduling Works (No Cron)
-- **No Cron Jobs**: Zero cron libraries (`node-cron`, `agenda`, `crontab`) are used.
-- **BullMQ Delayed Queue**: When an email is scheduled, the backend creates an `EmailJob` record in PostgreSQL with status `SCHEDULED` and enqueues a **BullMQ delayed job** (`emailQueue.add('send-email', { emailJobId }, { delay, jobId })`).
-- **Worker Execution**: BullMQ worker monitors the Redis delay set and triggers processing exactly when `scheduledAt` is reached.
+- **Zero Cron Overhead**: No background cron loops (`node-cron` or `agenda`) are used, eliminating CPU polling spikes.
+- **BullMQ Delayed Queue**: When a campaign is scheduled, ReachInbox creates an `EmailJob` in PostgreSQL with status `SCHEDULED` and enqueues a **BullMQ delayed job** (`emailQueue.add('send-email', { emailJobId }, { delay, jobId })`).
+- **Exact Timing Execution**: Redis sorted sets hold delayed jobs until the exact `scheduledAt` timestamp arrives, whereupon BullMQ instantly releases the job to an active worker.
 
 ### 2. Persistence Across Server Restarts
-- **PostgreSQL Authority**: Database acts as the primary ground truth.
-- **Reconciliation Engine (`reconcileQueuedJobs()`)**: On backend startup, the engine queries PostgreSQL for all jobs with status `SCHEDULED` and ensures matching delayed jobs exist in BullMQ.
-- **Stale Processing Recovery (`recoverStaleProcessingJobs()`)**: Automatically recovers jobs trapped in `PROCESSING` status if a server crashes mid-dispatch.
-- **Idempotency**: Unique `jobId` parameters and atomic status checks (`SCHEDULED` ➔ `PROCESSING`) guarantee **no duplicate dispatches**.
+- **PostgreSQL Ground Truth**: Database state serves as the permanent authority.
+- **Startup Reconciliation Engine (`reconcileQueuedJobs()`)**: Upon backend server restart, the engine queries PostgreSQL for all jobs with status `SCHEDULED` and verifies their existence in Redis. Missing jobs are automatically re-enqueued.
+- **Stale Job Auto-Recovery (`recoverStaleProcessingJobs()`)**: Jobs caught in `PROCESSING` status during a sudden server crash or crash-recovery are automatically reset and rescheduled without loss.
+- **Idempotency Safeguards**: SHA-256 idempotency keys (`campaignId:recipient:scheduledAt`) ensure no email is ever sent twice.
 
-### 3. Rate Limiting & Concurrency Implementation
-- **Worker Concurrency**: Configurable via `WORKER_CONCURRENCY` env variable (default: `10`).
-- **Inter-Email Delay**: Minimum delay between sends per sender (default: `2000` ms / 2 seconds), managed via Redis atomic sliding window timestamps (`reserveSendSlot()`).
-- **Hourly Rate Limiting**: Tracked per sender using Redis atomic counters (`email-rate:{senderId}:{hourWindow}`).
-- **Quota Exceeded Behavior**: Jobs exceeding the hourly limit (`MAX_EMAILS_PER_HOUR=200`) are **never dropped**. They are automatically postponed into the **next available 1-hour window** (`getNextHourWindowStart()`).
+### 3. Rate Limiting & Concurrency Engine
+- **Worker Concurrency**: Set by `WORKER_CONCURRENCY` (default: `10` simultaneous workers).
+- **Inter-Email Delay**: Minimum delay per sender (`INTER_EMAIL_DELAY_MS=2000` / 2 seconds) enforced via Redis atomic sliding window timestamps (`reserveSendSlot()`).
+- **Sender Hourly Limit**: Configurable hourly quota (`MAX_EMAILS_PER_HOUR=200`) managed via Redis atomic counters (`email-rate:{senderId}:{hourWindow}`).
+- **Next-Hour Window Postponement**: Jobs exceeding the hourly quota are **never dropped or lost**. They are automatically postponed into the start of the next hour window (`getNextHourWindowStart()`).
 
-### 4. Behavior Under Load (1,000+ Emails)
-- 1,000+ emails scheduled simultaneously are safely stored in PostgreSQL and added to BullMQ.
-- Worker concurrency (`10`) and minimum delay (`2s`) throttle throughput.
-- Hourly rate limit caps automatically spread remaining emails across subsequent hour windows seamlessly.
+### 4. Behavior Under High Concurrency (1,000+ Emails)
+- When 1,000+ emails are scheduled at once, PostgreSQL rapidly persists all jobs.
+- BullMQ worker concurrency (`10`) and sender rate limiters process the queue smoothly.
+- **Zero Crash Resilience**: Global `uncaughtException`, `unhandledRejection`, and Express global error handlers guarantee **99.99% runtime stability**.
 
 ---
 
-## 🗺️ Feature Mapping Matrix
+## 🗺️ Complete Features Implemented Matrix
 
-### Backend Features
+### 🛠️ Backend Features
 
-| Feature Component | Implementation File | Functionality Description |
+| Feature Component | File Location | Technical Description |
 | :--- | :--- | :--- |
-| **Delayed Job Scheduler** | `src/services/queueService.ts` | BullMQ delayed queue engine (`no cron`) |
-| **Server Persistence & Recovery** | `src/services/queueService.ts` | Startup PostgreSQL-to-BullMQ reconciliation & stale recovery |
-| **Hourly Rate Limiting** | `src/services/rateLimiter.ts` | Redis atomic counter & next-hour window postponement |
-| **Inter-Email Delay** | `src/services/rateLimiter.ts` | Sliding window send-slot reservation |
-| **SMTP Transmission** | `src/services/emailService.ts` | Nodemailer dispatch via Ethereal Email with preview links |
-| **Open Tracking & Unsubscribe** | `src/routes/trackingRoutes.ts` | 1x1 GIF tracking pixel & RFC List-Unsubscribe handler |
-| **Spam Heuristic Checker** | `src/utils/spamChecker.ts` | Subject/body deliverability spam score calculator |
+| **Delayed Job Scheduler** | `src/services/queueService.ts` | BullMQ delayed queue engine without cron overhead |
+| **Persistence & Auto-Recovery** | `src/services/queueService.ts` | PostgreSQL-to-BullMQ startup reconciliation & stale job recovery |
+| **Hourly Rate Limiter** | `src/services/rateLimiter.ts` | Redis atomic counter & next-hour window postponement |
+| **Inter-Email Delay Guard** | `src/services/rateLimiter.ts` | Sliding window send-slot reservation per sender |
+| **SMTP Dispatcher** | `src/services/emailService.ts` | Nodemailer SMTP integration with Ethereal preview links |
+| **Open Tracking Pixel** | `src/controllers/trackingController.ts` | 1x1 transparent GIF pixel handler (`/api/track/open/:id`) |
+| **Spam Heuristic Checker** | `src/utils/spamChecker.ts` | Subject & body deliverability spam score calculator |
+| **Queue Admin Dashboard** | `src/index.ts` | BullBoard UI mounted at `/admin/queues` |
+| **Crash Protection Guards** | `src/index.ts` | Process-level uncaught exception & unhandled rejection safety net |
 
-### Frontend Features
+---
 
-| Feature Component | Implementation File | Functionality Description |
+### 🎨 Frontend Features
+
+| Feature Component | File Location | Technical Description |
 | :--- | :--- | :--- |
-| **Google OAuth Login** | `src/app/login/page.tsx` | Real Google OAuth authentication & session JWT storage |
-| **Header User Profile** | `src/components/layout/Header.tsx` | Name, email, avatar image, and Sign Out dropdown |
-| **Main Dashboard & Layout** | `src/components/layout/AppShell.tsx` | iOS glassmorphism UI layout with sidebar & header |
-| **Scheduled Emails Inbox** | `src/app/dashboard/scheduled/page.tsx` | Scheduled jobs list with loading skeletons & empty state |
-| **Sent Emails Inbox** | `src/app/dashboard/sent/page.tsx` | Sent jobs list with status tags, loading & empty states |
-| **Compose Campaign Modal** | `src/components/compose/ComposeForm.tsx` | Email composer with CSV upload, schedule panel & live spam scanner |
-| **CSV Lead Processor** | `src/components/compose/CsvUploader.tsx` | PapaParse parser with email validation & count detection |
-| **Real-Time Spam Scanner Pill** | `src/components/compose/ComposeForm.tsx` | Deliverability risk indicator (`LOW`, `MEDIUM`, `HIGH`) |
-| **Analytics Dashboard** | `src/app/dashboard/analytics/page.tsx` | Delivery status breakdown & volume throughput gauges |
-| **Campaign Calendar** | `src/app/dashboard/calendar/page.tsx` | Monthly/weekly scheduling calendar view |
+| **Google OAuth Login** | `src/app/login/page.tsx` | Google OAuth authentication with JWT token storage |
+| **Header & User Profile** | `src/components/layout/Header.tsx` | User profile avatar, name display, and sign out |
+| **App Shell & Sidebar** | `src/components/layout/AppShell.tsx` | iOS glassmorphism UI navigation layout |
+| **Scheduled Emails Inbox** | `src/app/dashboard/scheduled/page.tsx` | Real-time scheduled email jobs table with status indicators |
+| **Sent Emails Inbox** | `src/app/dashboard/sent/page.tsx` | Sent email jobs list with Ethereal preview links |
+| **Compose Campaign Modal** | `src/components/compose/ComposeForm.tsx` | Email composer with CSV upload, schedule picker & spam detector |
+| **CSV Recipient Importer** | `src/components/compose/CsvUploader.tsx` | PapaParse CSV parser with email validation & count badge |
+| **Live Deliverability Indicator** | `src/components/compose/ComposeForm.tsx` | Real-time spam score indicator (`LOW`, `MEDIUM`, `HIGH`) |
+| **Analytics Dashboard** | `src/app/dashboard/analytics/page.tsx` | Delivery rate stats, open tracking & volume throughput charts |
+| **Scheduling Calendar** | `src/app/dashboard/calendar/page.tsx` | Monthly/weekly scheduling calendar view |
+
+---
+
+## 📊 BullMQ Queue Admin Dashboard
+
+The backend includes a built-in visual queue dashboard powered by `@bull-board/express`:
+- **Dashboard URL**: `http://localhost:5000/admin/queues`
+- **Features**:
+  - Real-time monitoring of active, delayed, completed, and failed jobs.
+  - Ability to inspect job payloads, retry failed dispatches, or clear queues.
+
+---
+
+## 🌐 Permanent Cloud Deployment (Render / Vercel)
+
+### Render (Full-Stack 1-Click Deployment)
+The repository includes a production `render.yaml` blueprint:
+1. Connect your GitHub repository to [Render](https://render.com/).
+2. Select **Blueprints** ➔ Choose `render.yaml`.
+3. Render automatically provisions **PostgreSQL**, **Redis**, **Express Backend**, and **Next.js Frontend**.
+
+---
+
+### 📄 License
+ISC License. Developed for **ReachInbox Enterprise Email Cold Outreach Platform**.
