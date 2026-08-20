@@ -34,7 +34,7 @@ services:
         fromService:
           type: web
           name: reachinbox-backend
-          property: url
+          property: host
 
 databases:
   # 3. PostgreSQL Managed Database
