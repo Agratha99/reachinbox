@@ -13,6 +13,8 @@ export default function SentEmailsPage() {
     const { data, isLoading } = useQuery({
         queryKey: ['sent-emails', page, searchQuery],
         queryFn: () => fetchSentEmails({ page, limit: 10, search: searchQuery }),
+        staleTime: 15000,
+        gcTime: 300000,
     });
 
     return (
