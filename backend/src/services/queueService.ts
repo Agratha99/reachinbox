@@ -395,7 +395,7 @@ export async function processSingleEmailJob(emailJobId: string): Promise<boolean
  */
 function startEmergencyFallbackLoop() {
     if (fallbackIntervalTimer) return;
-    console.warn('[FallbackDispatcher] Activating database emergency dispatch loop...');
+    console.warn('[FallbackDispatcher] Activating 1-second database emergency dispatch loop...');
 
     fallbackIntervalTimer = setInterval(async () => {
         try {
@@ -405,17 +405,21 @@ function startEmergencyFallbackLoop() {
                     status: 'SCHEDULED',
                     scheduledAt: { lte: now },
                 },
-                take: 25,
+                take: 50,
                 orderBy: { scheduledAt: 'asc' },
             });
 
             for (const job of dueJobs) {
-                await processSingleEmailJob(job.id);
+                try {
+                    await processSingleEmailJob(job.id);
+                } catch (jobErr: any) {
+                    console.error(`[FallbackDispatcher] Error processing job ${job.id}:`, jobErr.message);
+                }
             }
         } catch (err: any) {
             // Quiet fail
         }
-    }, 5000);
+    }, 1000);
 }
 
 function stopEmergencyFallbackLoop() {

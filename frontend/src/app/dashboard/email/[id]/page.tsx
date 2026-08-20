@@ -16,6 +16,8 @@ export default function EmailDetailPage() {
         queryKey: ['email-detail', id],
         queryFn: () => fetchEmailDetail(id),
         enabled: !!id,
+        staleTime: 1000,
+        refetchInterval: 2000,
     });
 
     return (

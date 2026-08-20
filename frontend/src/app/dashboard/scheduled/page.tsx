@@ -13,7 +13,8 @@ export default function ScheduledEmailsPage() {
     const { data, isLoading } = useQuery({
         queryKey: ['scheduled-emails', page, searchQuery],
         queryFn: () => fetchScheduledEmails({ page, limit: 10, search: searchQuery }),
-        staleTime: 15000,
+        staleTime: 1000,
+        refetchInterval: 2000,
         gcTime: 300000,
     });
 
