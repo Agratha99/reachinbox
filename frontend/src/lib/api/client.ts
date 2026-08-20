@@ -23,10 +23,12 @@ const getApiBaseUrl = () => {
     }
     if (typeof window !== 'undefined') {
         const { protocol, hostname } = window.location;
-        // Only append :5000 for LAN IPs or localhost. Never for Netlify/Vercel/cloud domains!
+        // On LAN IPs or localhost, hit port 5000
         if (isLanOrLocalhost(hostname)) {
             return `${protocol}//${hostname}:5000/api`;
         }
+        // On hosted platforms (Netlify/Vercel), use relative '/api' endpoint to prevent HTTPS mixed-content network errors
+        return '/api';
     }
     return 'http://localhost:5000/api';
 };
