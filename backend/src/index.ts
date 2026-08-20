@@ -253,10 +253,17 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('[ProcessCrashGuard] Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
-app.listen(PORT, async () => {
-    console.log(`=================================================`);
-    console.log(`🚀 ReachInbox Backend API running on port ${PORT}`);
-    console.log(`=================================================`);
-    await seedInitialData();
-    initQueueEngine();
-});
+if (process.env.NODE_ENV !== 'test' && !process.env.NETLIFY && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    app.listen(PORT, async () => {
+        console.log(`=================================================`);
+        console.log(`🚀 ReachInbox Backend API running on port ${PORT}`);
+        console.log(`=================================================`);
+        await seedInitialData();
+        initQueueEngine();
+    });
+} else {
+    seedInitialData().catch(console.error);
+}
+
+export default app;
+export { app, seedInitialData };

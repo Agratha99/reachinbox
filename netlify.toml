@@ -1,0 +1,17 @@
+[build]
+  command = "cd backend && npm install && npm run build && cd ../frontend && npm install && npm run build"
+  publish = "frontend/.next"
+  functions = "netlify/functions"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NODE_VERSION = "18.17.0"
+
+# Netlify Serverless Function route for API endpoints
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
