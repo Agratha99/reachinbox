@@ -127,25 +127,29 @@ The frontend web application will be available at **`http://localhost:3000`**.
 
 ---
 
+## 📊 BullMQ Queue Admin Dashboard
+
+The backend includes `@bull-board/express` for real-time visual queue monitoring!
+- **URL**: `http://localhost:5000/admin/queues` (or `https://your-backend-api.onrender.com/admin/queues`)
+- **Features**:
+  - View live active workers, delayed jobs, completed dispatches, and failed job retries.
+  - Inspect exact job payloads, Redis delay timestamps, and backoff configurations.
+  - Manually retry or clean failed jobs directly from the admin UI.
+
+---
+
 ## 🏗️ Architecture Overview
 
-```
- ┌────────────────┐       HTTP / REST       ┌──────────────────────┐
- │  Next.js 14    │  ────────────────────►  │ Express API Backend  │
- │  Frontend UI   │                         └──────────┬───────────┘
- └────────────────┘                                    │
-                                           Persist     │ Enqueue Job
-                                           Job State   │ (No Cron)
-                                                       ▼
- ┌────────────────┐      Pull Jobs (Conc: 10)  ┌──────────────────────┐
- │ Ethereal Email │  ◄───────────────────────  │  BullMQ Queue Engine │
- │ (Nodemailer)   │                            │   (Backed by Redis)  │
- └────────────────┘                            └──────────┬───────────┘
-                                                          │ Atomic Rate Check
-                                                          ▼
-                                               ┌──────────────────────┐
-                                               │  PostgreSQL / MySQL  │
-                                               └──────────────────────┘
+```mermaid
+flowchart TD
+    A[Next.js 14 Frontend UI] -->|1. REST API / Schedule| B[Express.js Backend API]
+    B -->|2. Persist Job State| C[(PostgreSQL Database)]
+    B -->|3. Enqueue Delayed Job| D[BullMQ Queue Engine]
+    D <-->|4. Redis Storage| E[(Redis Instance)]
+    D -->|5. Worker Pick Up| F[Worker Process]
+    F -->|6. Atomic Rate & Inter-Delay Check| E
+    F -->|7. Dispatch Mail| G[Nodemailer / Ethereal SMTP]
+    G -->|8. Save Preview URL & MessageID| C
 ```
 
 ### 1. How Scheduling Works (No Cron)
@@ -154,7 +158,7 @@ The frontend web application will be available at **`http://localhost:3000`**.
 - **Worker Execution**: BullMQ worker monitors the Redis delay set and triggers processing exactly when `scheduledAt` is reached.
 
 ### 2. Persistence Across Server Restarts
-- **PostgreSQL / MySQL Authority**: Database acts as the primary ground truth.
+- **PostgreSQL Authority**: Database acts as the primary ground truth.
 - **Reconciliation Engine (`reconcileQueuedJobs()`)**: On backend startup, the engine queries PostgreSQL for all jobs with status `SCHEDULED` and ensures matching delayed jobs exist in BullMQ.
 - **Stale Processing Recovery (`recoverStaleProcessingJobs()`)**: Automatically recovers jobs trapped in `PROCESSING` status if a server crashes mid-dispatch.
 - **Idempotency**: Unique `jobId` parameters and atomic status checks (`SCHEDULED` ➔ `PROCESSING`) guarantee **no duplicate dispatches**.

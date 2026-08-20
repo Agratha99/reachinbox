@@ -92,9 +92,24 @@ export default function EmailRow({ email }: EmailRowProps) {
                 </div>
             </div>
 
-            {/* Date & Time on right */}
-            <div className="flex-shrink-0 text-right text-xs text-gray-400 font-medium whitespace-nowrap pl-2">
-                <span>{formattedDate}</span> <span className="ml-1 text-gray-500">{formattedTime}</span>
+            {/* Date, Time & Ethereal Link on right */}
+            <div className="flex items-center space-x-3 flex-shrink-0 text-right text-xs text-gray-400 font-medium whitespace-nowrap pl-2">
+                {email.previewUrl && (
+                    <a
+                        href={email.previewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center space-x-1 px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 border border-emerald-500/30 rounded-lg text-[11px] font-bold transition-all shadow-2xs hover:scale-105"
+                        title="View rendered email preview on Ethereal Email SMTP"
+                    >
+                        <span>Preview Email</span>
+                        <span>↗</span>
+                    </a>
+                )}
+                <div>
+                    <span>{formattedDate}</span> <span className="ml-1 text-gray-500">{formattedTime}</span>
+                </div>
             </div>
         </Link>
     );

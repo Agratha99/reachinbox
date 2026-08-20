@@ -14,6 +14,10 @@ import { initQueueEngine, redisConnection, isRedisConnected, emailQueue } from '
 import { prisma } from './db/prisma';
 import { requireAuth } from './middleware/authMiddleware';
 
+import { createBullBoard } from '@bull-board/api';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { ExpressAdapter } from '@bull-board/express';
+
 dotenv.config();
 
 const app = express();
@@ -22,6 +26,25 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// BullBoard Queue Dashboard for Recruiters/Ops
+const serverAdapter = new ExpressAdapter();
+serverAdapter.setBasePath('/admin/queues');
+
+let bullBoardInitialized = false;
+function setupBullBoard() {
+    if (emailQueue && !bullBoardInitialized) {
+        createBullBoard({
+            queues: [new BullMQAdapter(emailQueue)],
+            serverAdapter,
+        });
+        bullBoardInitialized = true;
+    }
+}
+app.use('/admin/queues', (req, res, next) => {
+    setupBullBoard();
+    next();
+}, serverAdapter.getRouter());
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
