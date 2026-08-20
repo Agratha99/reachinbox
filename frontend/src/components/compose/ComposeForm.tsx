@@ -74,6 +74,7 @@ export default function ComposeForm() {
         try {
             const res = await sendImmediateApi({
                 recipients,
+                recipient: recipients[0],
                 subject,
                 body: bodyHtml,
             });
@@ -122,6 +123,7 @@ export default function ComposeForm() {
                 subject,
                 body: bodyHtml,
                 scheduledAt: targetTime,
+                delayMs: delayBetweenSeconds * 1000,
                 delayBetweenSeconds,
                 hourlyLimit,
             });
