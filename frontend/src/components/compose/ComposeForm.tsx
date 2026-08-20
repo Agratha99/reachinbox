@@ -10,8 +10,7 @@ import CampaignSummaryModal from './CampaignSummaryModal';
 import { scheduleCampaignApi, sendImmediateApi } from '@/lib/api/emails';
 import { getCurrentUser } from '@/lib/api/auth';
 import { User } from '@/types';
-import { checkSpamScore, SpamCheckResult } from '@/lib/spamChecker';
-import { Send, Clock, AlertCircle, CheckCircle2, Tag, HelpCircle, UserCheck, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Send, Clock, AlertCircle, CheckCircle2, UserCheck } from 'lucide-react';
 
 export default function ComposeForm() {
     const router = useRouter();
@@ -20,7 +19,6 @@ export default function ComposeForm() {
     const [recipients, setRecipients] = useState<string[]>([]);
     const [subject, setSubject] = useState('');
     const [bodyHtml, setBodyHtml] = useState('');
-
     const [scheduledAt, setScheduledAt] = useState<string>('');
     const [delayBetweenSeconds, setDelayBetweenSeconds] = useState<number>(2);
     const [hourlyLimit, setHourlyLimit] = useState<number>(200);
@@ -47,10 +45,6 @@ export default function ComposeForm() {
 
     const displayName = user?.name || 'Rahul Reddy';
     const displayEmail = user?.senders?.[0]?.email || user?.email || 'kataru.rahul@gmail.com';
-
-    const insertVariable = (tag: string) => {
-        setBodyHtml((prev) => prev + ` ${tag} `);
-    };
 
     const handleSendImmediate = async () => {
         if (recipients.length === 0) {
@@ -145,15 +139,9 @@ export default function ComposeForm() {
     return (
         <div className="ios-glass rounded-[32px] border border-white/80 shadow-[0_25px_60px_rgba(0,0,0,0.06)] max-w-4xl mx-auto overflow-hidden font-sans backdrop-blur-3xl">
             {/* Top Glass Header */}
-            <div className="px-7 py-5 border-b border-white/60 bg-gradient-to-r from-white/90 via-emerald-50/50 to-white/90 flex flex-wrap items-center justify-between gap-3">
+            <div className="px-7 py-4 border-b border-white/60 bg-gradient-to-r from-white/90 via-emerald-50/50 to-white/90 flex items-center justify-between">
                 <div>
-                    <h1 className="text-base font-extrabold text-gray-900 flex items-center space-x-2">
-                        <span>Compose Cold Campaign</span>
-                        <span className="text-[10px] bg-emerald-500/15 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-                            Pro Spintax Engine
-                        </span>
-                    </h1>
-                    <p className="text-xs text-gray-500 font-medium">Design personalized outreach with dynamic variables and tracking</p>
+                    <h1 className="text-base font-bold text-gray-900">Compose Email</h1>
                 </div>
 
                 <div className="flex items-center space-x-2.5">
@@ -220,76 +208,11 @@ export default function ComposeForm() {
                     <label className="w-16 font-bold text-gray-500">Subject:</label>
                     <input
                         type="text"
-                        placeholder="Enter subject line (supports Spintax: {Hi|Hey} and {{firstName}})..."
+                        placeholder="Enter subject line..."
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
                         className="flex-1 px-4 py-3 ios-input rounded-2xl text-xs text-gray-900 font-semibold placeholder-gray-400"
                     />
-                </div>
-
-                {/* Spam Score Heuristic Scanner Pill */}
-                {(() => {
-                    const spamResult = checkSpamScore(subject, bodyHtml);
-                    return (
-                        <div className="flex items-center justify-between px-4 py-2 bg-white/60 rounded-xl border border-white/80 text-xs">
-                            <div className="flex items-center space-x-2">
-                                {spamResult.level === 'LOW' ? (
-                                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                                ) : (
-                                    <AlertTriangle className="w-4 h-4 text-amber-500" />
-                                )}
-                                <span className="font-bold text-gray-700">Deliverability Spam Score:</span>
-                                <span className={`px-2.5 py-0.5 rounded-full font-extrabold text-[11px] ${spamResult.level === 'LOW'
-                                    ? 'bg-emerald-500/15 text-emerald-800 border border-emerald-500/30'
-                                    : spamResult.level === 'MEDIUM'
-                                        ? 'bg-amber-500/15 text-amber-800 border border-amber-500/30'
-                                        : 'bg-rose-500/15 text-rose-800 border border-rose-500/30'
-                                    }`}>
-                                    {spamResult.score}% ({spamResult.level} RISK)
-                                </span>
-                            </div>
-
-                            {spamResult.foundWords.length > 0 && (
-                                <span className="text-[10px] text-amber-700 font-medium">
-                                    Trigger phrases detected: <code className="font-bold">{spamResult.foundWords.join(', ')}</code>
-                                </span>
-                            )}
-                        </div>
-                    );
-                })()}
-
-                {/* Dynamic Variable & Spintax Shortcut Bar */}
-                <div className="flex flex-wrap items-center justify-between bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-indigo-500/10 border border-emerald-500/20 rounded-2xl px-4 py-3 text-xs gap-2">
-                    <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                        <Tag className="w-4 h-4 text-emerald-700" />
-                        <span className="font-bold text-emerald-950">Insert Tags:</span>
-                        <button
-                            type="button"
-                            onClick={() => insertVariable('{{firstName}}')}
-                            className="px-3 py-1.5 bg-white/90 border border-emerald-400/60 hover:border-emerald-600 text-emerald-900 font-mono text-[11px] font-bold rounded-xl shadow-2xs transition-all hover:scale-105"
-                        >
-                            &#123;&#123;firstName&#125;&#125;
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => insertVariable('{{companyName}}')}
-                            className="px-3 py-1.5 bg-white/90 border border-emerald-400/60 hover:border-emerald-600 text-emerald-900 font-mono text-[11px] font-bold rounded-xl shadow-2xs transition-all hover:scale-105"
-                        >
-                            &#123;&#123;companyName&#125;&#125;
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => insertVariable('{Hi|Hey|Hello}')}
-                            className="px-3 py-1.5 bg-white/90 border border-emerald-400/60 hover:border-emerald-600 text-emerald-900 font-mono text-[11px] font-bold rounded-xl shadow-2xs transition-all hover:scale-105"
-                        >
-                            &#123;Hi|Hey|Hello&#125;
-                        </button>
-                    </div>
-
-                    <div className="flex items-center space-x-1.5 text-emerald-800 font-semibold text-[11px]">
-                        <HelpCircle className="w-3.5 h-3.5" />
-                        <span>Spintax Randomized Per Send</span>
-                    </div>
                 </div>
 
                 {/* Body Text Editor */}
