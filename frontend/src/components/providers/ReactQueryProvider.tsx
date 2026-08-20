@@ -9,9 +9,10 @@ export default function ReactQueryProvider({ children }: { children: React.React
             new QueryClient({
                 defaultOptions: {
                     queries: {
-                        staleTime: 5000,
-                        refetchInterval: 8000, // Periodic background polling for real-time inbox updates
-                        refetchOnWindowFocus: true,
+                        staleTime: 1000,
+                        retry: 3,
+                        retryDelay: (attempt) => Math.min(1000 * Math.pow(2, attempt), 10000),
+                        refetchOnWindowFocus: false,
                     },
                 },
             })

@@ -234,6 +234,25 @@ async function seedInitialData() {
     }
 }
 
+// Global Express Error Handler Middleware (Prevents server crashes on uncaught route errors)
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('[GlobalExpressError] Unhandled error captured:', err?.stack || err?.message || err);
+    if (!res.headersSent) {
+        res.status(err.status || 500).json({
+            error: err.message || 'Internal Server Error',
+        });
+    }
+});
+
+// Crash-proof Process Level Event Listeners (Prevents Node runtime exit on unexpected exceptions)
+process.on('uncaughtException', (err) => {
+    console.error('[ProcessCrashGuard] Uncaught Exception caught safely:', err.message, err.stack);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[ProcessCrashGuard] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 app.listen(PORT, async () => {
     console.log(`=================================================`);
     console.log(`🚀 ReachInbox Backend API running on port ${PORT}`);
