@@ -1,0 +1,68 @@
+services:
+  # 1. Express Backend API & BullMQ Worker
+  - type: web
+    name: reachinbox-backend
+    env: node
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npx prisma generate && npx prisma db push && npm run build
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: reachinbox-postgres
+          property: connectionString
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: reachinbox-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: redis
+          name: reachinbox-redis
+          property: port
+      - key: WORKER_CONCURRENCY
+        value: 10
+      - key: MAX_EMAILS_PER_HOUR
+        value: 200
+      - key: INTER_EMAIL_DELAY_MS
+        value: 2000
+      - key: JWT_SECRET
+        generateValue: true
+
+  # 2. Next.js Frontend Web UI
+  - type: web
+    name: reachinbox-frontend
+    env: node
+    region: singapore
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: reachinbox-backend
+          property: url
+          postfix: /api
+
+databases:
+  # 3. PostgreSQL Database
+  - name: reachinbox-postgres
+    region: singapore
+    plan: free
+    databaseName: reachinbox
+    user: reachinbox_user
+
+keyvalueStores:
+  # 4. Redis Store (BullMQ Queue)
+  - name: reachinbox-redis
+    region: singapore
+    plan: free

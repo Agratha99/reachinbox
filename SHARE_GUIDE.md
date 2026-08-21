@@ -23,12 +23,12 @@ If you already have ReachInbox running locally on your computer (`localhost:3000
 If someone wants to run ReachInbox on their own machine, they only need your GitHub link:
 
 1. Send them your GitHub repository link:
-   `https://github.com/nmit-1NT23CS105/Rinbox.git`
+   `https://github.com/Agratha99/reachinbox.git`
 
 2. Instruct them to run:
    ```bash
-   git clone https://github.com/nmit-1NT23CS105/Rinbox.git
-   cd Rinbox
+   git clone https://github.com/Agratha99/reachinbox.git
+   cd reachinbox
    ```
 
 3. **Double-click `start.bat`** (on Windows) OR run:
@@ -45,7 +45,7 @@ If someone wants to run ReachInbox on their own machine, they only need your Git
 If you want a 24/7 permanent hosted URL:
 1. **Render (Full-Stack 1-Click)**:
    - Go to [Render Dashboard](https://dashboard.render.com/) ➔ New ➔ **Blueprint**.
-   - Connect `https://github.com/nmit-1NT23CS105/Rinbox.git`.
+   - Connect `https://github.com/Agratha99/reachinbox.git`.
    - Render will deploy PostgreSQL, Express API, and Next.js UI automatically using `render.yaml`.
 
 2. **Vercel (Frontend UI)**:
