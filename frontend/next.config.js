@@ -14,7 +14,10 @@ const nextConfig = {
         ],
     },
     async rewrites() {
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://reachinbox-backend.onrender.com';
+        let backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://reachinbox-backend.onrender.com';
+        if (!backendUrl.startsWith('http://') && !backendUrl.startsWith('https://')) {
+            backendUrl = `https://${backendUrl}`;
+        }
         const cleanBackendUrl = backendUrl.replace(/\/+$/, '').replace(/\/api$/, '');
         return [
             {
