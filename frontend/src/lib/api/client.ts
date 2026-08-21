@@ -1,7 +1,13 @@
 import axios from 'axios';
 
 const normalizeApiBaseUrl = (baseUrl: string) => {
-    const trimmed = baseUrl.replace(/\/+$/, '');
+    let trimmed = baseUrl.trim().replace(/\/+$/, '');
+    if (trimmed.startsWith('/')) {
+        return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+    }
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+        trimmed = `https://${trimmed}`;
+    }
     return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
 };
 
@@ -27,7 +33,7 @@ const getApiBaseUrl = () => {
         if (isLanOrLocalhost(hostname)) {
             return `${protocol}//${hostname}:5000/api`;
         }
-        // On hosted platforms (Netlify/Vercel), use relative '/api' endpoint to prevent HTTPS mixed-content network errors
+        // On hosted platforms (Netlify/Vercel/Render), use relative '/api' endpoint
         return '/api';
     }
     return 'http://localhost:5000/api';
