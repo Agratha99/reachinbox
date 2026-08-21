@@ -24,6 +24,12 @@ export default function AnalyticsPage() {
 
     useEffect(() => {
         fetchAnalytics();
+        const timer = setInterval(() => {
+            getAnalyticsSummaryApi()
+                .then((res) => setData(res))
+                .catch(() => { });
+        }, 3000);
+        return () => clearInterval(timer);
     }, []);
 
     const metrics = data?.metrics || {

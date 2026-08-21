@@ -8,7 +8,7 @@ import { processEmailTemplate } from '../utils/spintax';
 
 const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
 const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379', 10);
-const WORKER_CONCURRENCY = parseInt(process.env.WORKER_CONCURRENCY || '10', 10);
+const WORKER_CONCURRENCY = parseInt(process.env.WORKER_CONCURRENCY || '50', 10);
 const PROCESSING_TIMEOUT_MS = parseInt(process.env.PROCESSING_TIMEOUT_MS || '120000', 10);
 const QUEUE_NAME = 'reachinbox-email-queue';
 
@@ -263,7 +263,7 @@ export async function processSingleEmailJob(emailJobId: string): Promise<boolean
         const slotMs = await reserveSendSlot(
             redisConnection,
             job.senderId,
-            job.campaign.delayMs || 2000
+            job.campaign.delayMs !== undefined ? job.campaign.delayMs : 50
         );
 
         const delayMs = slotMs - Date.now();

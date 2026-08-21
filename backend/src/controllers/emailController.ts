@@ -515,71 +515,84 @@ export async function sendImmediateEmail(req: AuthenticatedRequest, res: Respons
         let sentCount = 0;
         let lastPreviewUrl: string | undefined;
 
-        for (const recipientEmail of recipientList) {
-            // Check suppression list
-            const isUnsubscribed = await prisma.unsubscribedRecipient.findUnique({
-                where: { email: recipientEmail.toLowerCase() },
-            });
+        // Ultra-fast parallel execution for all recipients
+        const results = await Promise.all(
+            recipientList.map(async (recipientEmail) => {
+                const cleanEmail = recipientEmail.toLowerCase().trim();
 
-            if (isUnsubscribed) {
-                skippedRecipients.push(recipientEmail);
-                continue;
-            }
+                // Check suppression list
+                const isUnsubscribed = await prisma.unsubscribedRecipient.findUnique({
+                    where: { email: cleanEmail },
+                });
 
-            const idempotencyKey = crypto
-                .createHash('sha256')
-                .update(`${campaign.id}:${recipientEmail}:${Date.now()}`)
-                .digest('hex');
+                if (isUnsubscribed) {
+                    return { status: 'SKIPPED', recipientEmail };
+                }
 
-            const job = await prisma.emailJob.create({
-                data: {
-                    campaignId: campaign.id,
-                    senderId: sender.id,
-                    recipient: recipientEmail,
+                const idempotencyKey = crypto
+                    .createHash('sha256')
+                    .update(`${campaign.id}:${cleanEmail}:${Date.now()}`)
+                    .digest('hex');
+
+                const job = await prisma.emailJob.create({
+                    data: {
+                        campaignId: campaign.id,
+                        senderId: sender.id,
+                        recipient: recipientEmail,
+                        subject,
+                        body: cleanBody,
+                        status: 'PROCESSING',
+                        scheduledAt: new Date(),
+                        idempotencyKey,
+                    },
+                });
+
+                await prisma.emailJob.update({
+                    where: { id: job.id },
+                    data: { bullmqJobId: job.id },
+                });
+
+                const result = await sendMail({
+                    from: fromString,
+                    to: recipientEmail,
                     subject,
-                    body: cleanBody,
-                    status: 'PROCESSING',
-                    scheduledAt: new Date(),
-                    idempotencyKey,
-                },
-            });
-
-            await prisma.emailJob.update({
-                where: { id: job.id },
-                data: { bullmqJobId: job.id },
-            });
-
-            const result = await sendMail({
-                from: fromString,
-                to: recipientEmail,
-                subject,
-                html: cleanBody,
-                smtpHost: sender.smtpHost || undefined,
-                smtpPort: sender.smtpPort || undefined,
-                smtpUser: sender.smtpUser || undefined,
-                smtpPass: sender.smtpPass || undefined,
-            });
-
-            if (result.success) {
-                await prisma.emailJob.update({
-                    where: { id: job.id },
-                    data: {
-                        status: 'SENT',
-                        sentAt: new Date(),
-                        messageId: result.messageId,
-                        previewUrl: result.previewUrl,
-                    },
+                    html: cleanBody,
+                    smtpHost: sender.smtpHost || undefined,
+                    smtpPort: sender.smtpPort || undefined,
+                    smtpUser: sender.smtpUser || undefined,
+                    smtpPass: sender.smtpPass || undefined,
                 });
+
+                if (result.success) {
+                    await prisma.emailJob.update({
+                        where: { id: job.id },
+                        data: {
+                            status: 'SENT',
+                            sentAt: new Date(),
+                            messageId: result.messageId,
+                            previewUrl: result.previewUrl,
+                        },
+                    });
+                    return { status: 'SENT', recipientEmail, previewUrl: result.previewUrl };
+                } else {
+                    await prisma.emailJob.update({
+                        where: { id: job.id },
+                        data: {
+                            status: 'FAILED',
+                            errorMessage: result.error,
+                        },
+                    });
+                    return { status: 'FAILED', recipientEmail };
+                }
+            })
+        );
+
+        for (const resItem of results) {
+            if (resItem.status === 'SKIPPED') {
+                skippedRecipients.push(resItem.recipientEmail);
+            } else if (resItem.status === 'SENT') {
                 sentCount++;
-                lastPreviewUrl = result.previewUrl;
-            } else {
-                await prisma.emailJob.update({
-                    where: { id: job.id },
-                    data: {
-                        status: 'FAILED',
-                        errorMessage: result.error,
-                    },
-                });
+                if (resItem.previewUrl) lastPreviewUrl = resItem.previewUrl;
             }
         }
 
