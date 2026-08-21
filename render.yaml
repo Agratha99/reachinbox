@@ -59,6 +59,7 @@ services:
     region: singapore
     plan: free
     maxmemoryPolicy: noeviction
+    ipAllowList: []
 
 databases:
   # 4. PostgreSQL Database
