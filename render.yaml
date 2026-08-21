@@ -53,16 +53,17 @@ services:
           property: url
           postfix: /api
 
+  # 3. Redis Store (BullMQ Queue)
+  - type: redis
+    name: reachinbox-redis
+    region: singapore
+    plan: free
+    maxmemoryPolicy: noeviction
+
 databases:
-  # 3. PostgreSQL Database
+  # 4. PostgreSQL Database
   - name: reachinbox-postgres
     region: singapore
     plan: free
     databaseName: reachinbox
     user: reachinbox_user
-
-keyvalueStores:
-  # 4. Redis Store (BullMQ Queue)
-  - name: reachinbox-redis
-    region: singapore
-    plan: free
