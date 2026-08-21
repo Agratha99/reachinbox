@@ -24,24 +24,24 @@ const isLanOrLocalhost = (hostname: string) => {
 };
 
 const getApiBaseUrl = () => {
-    if (process.env.NEXT_PUBLIC_API_URL) {
-        return normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL);
-    }
     if (typeof window !== 'undefined') {
         const { protocol, hostname } = window.location;
-        // On LAN IPs or localhost, hit port 5000
         if (isLanOrLocalhost(hostname)) {
             return `${protocol}//${hostname}:5000/api`;
         }
-        // On hosted platforms (Netlify/Vercel/Render), use relative '/api' endpoint
+        // In browser on hosted platforms (Render/Vercel/Netlify), use relative '/api'
+        // Next.js rewrites in next.config.js will proxy '/api' to the backend with zero CORS issues
         return '/api';
+    }
+    if (process.env.NEXT_PUBLIC_API_URL) {
+        return normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL);
     }
     return 'http://localhost:5000/api';
 };
 
 export const apiClient = axios.create({
     baseURL: getApiBaseUrl(),
-    timeout: 15000,
+    timeout: 60000, // 60s timeout to handle Render free-tier cold starts
     headers: {
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
@@ -49,7 +49,7 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-    if (!config.baseURL || config.baseURL === '/' || config.baseURL.includes('undefined')) {
+    if (!config.baseURL || config.baseURL.includes('undefined')) {
         config.baseURL = getApiBaseUrl();
     }
     if (typeof window !== 'undefined') {
