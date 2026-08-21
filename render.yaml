@@ -50,8 +50,7 @@ services:
         fromService:
           type: web
           name: reachinbox-backend
-          property: url
-          postfix: /api
+          property: host
 
   # 3. Redis Store (BullMQ Queue)
   - type: redis
